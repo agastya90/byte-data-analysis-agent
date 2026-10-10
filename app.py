@@ -65,10 +65,13 @@ def filter_rows(df, question):
         col = next((c for c in df.columns if c.lower() in col_text or col_text in c.lower()), None)
     if col is None:
         return f"Column '{col_text}' not found. Available columns: {', '.join(map(str, df.columns))}"
-    try:
-        series = pd.to_numeric(df[col], errors="raise")
+   try:
+        series = pd.to_numeric(df[col], errors="coerce")
+        if series.notna().sum() == 0:
+            return f"Column '{col}' has no numeric values to compare."
     except (ValueError, TypeError):
-        return f"Column '{col}' is not numeric, so numeric comparisons aren't supported for it."
+        return f"Column '{col}' could not be converted to numeric values."
+
     value = float(value_text)
     mask = {">": series > value, "<": series < value, ">=": series >= value,
             "<=": series <= value, "=": series == value, "==": series == value}[op]
